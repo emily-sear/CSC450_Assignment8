@@ -10,16 +10,14 @@ public class ChatWorkerThread extends Thread
     private Scanner clientInput;
     private int workerThreadID;
    // private static ChatWorkerThread instance = null;
-    private ChatManagerThread manager;
 
-    public ChatWorkerThread(Socket theClientSocket, int workerThreadID, ChatManagerThread manager)
+    public ChatWorkerThread(Socket theClientSocket, int workerThreadID)
     {
         try 
         {
             System.out.println("Connection Established...");
             this.theClientSocket = theClientSocket;
             this.workerThreadID = workerThreadID;
-            this.manager = manager;
             this.clientOutput = new PrintStream(this.theClientSocket.getOutputStream());
             this.clientInput = new Scanner(this.theClientSocket.getInputStream());
         }
@@ -58,7 +56,6 @@ public class ChatWorkerThread extends Thread
             while(true)
             {
                 String message = clientInput.nextLine();
-                this.manager.someoneSaidSomething(this.workerThreadID, message);
                 try{
                     wait(5000);
                 }
@@ -81,7 +78,6 @@ public class ChatWorkerThread extends Thread
                     System.out.println("Something went wrong");
                 }
                 String message = clientInput.nextLine();
-                this.manager.someoneSaidSomething(this.workerThreadID, message);
 
             }
     
