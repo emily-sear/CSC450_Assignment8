@@ -1,89 +1,61 @@
-import java.io.*;
-import java.net.*;
+import java.io.PrintStream;
+import java.net.Socket;
 import java.util.Scanner;
 
-
-public class ChatWorkerThread extends Thread
+public class ChatWorkerThread extends Thread 
 {
     private Socket theClientSocket;
     private PrintStream clientOutput;
     private Scanner clientInput;
-    private int workerThreadID;
-   // private static ChatWorkerThread instance = null;
 
-    public ChatWorkerThread(Socket theClientSocket, int workerThreadID)
+    //homework --> get hash code
+
+    public ChatWorkerThread(Socket theClientSocket)
     {
         try 
         {
             System.out.println("Connection Established...");
             this.theClientSocket = theClientSocket;
-            this.workerThreadID = workerThreadID;
             this.clientOutput = new PrintStream(this.theClientSocket.getOutputStream());
+            CORE.addClientPrintStream(this.clientOutput);
             this.clientInput = new Scanner(this.theClientSocket.getInputStream());
-        }
-        catch (Exception e)
+        } 
+        catch (Exception e) 
         {
-            System.err.println("Bad things happened in thread");
-            e.printStackTrace(); // gives you the full error message
+            System.err.println("Bad things happened in thread!!!!!");
+            e.printStackTrace();
         }
-
+        
     }
 
-    /**public static ChatWorkerThread getInstance(Socket theClientSocket, int workerThreadID)
-    {
-        if(instance == null)
-        {
-            instance = new ChatWorkerThread(theClientSocket, workerThreadID);
-        }
-        return instance;
-    } **/
-
-    public PrintStream getClientOutput()
-    {
-        return this.clientOutput;
-    }
-
-    public int getWorkerThreadID()
-    {
-        return this.workerThreadID;
-    }
     public void run()
     {
-        // this is what the thread does  
-        clientOutput.println("Say hi!");
-        if(this.workerThreadID == 0)
+        try
         {
-            while(true)
-            {
-                String message = clientInput.nextLine();
-                try{
-                    wait(5000);
-                }
-                catch (Exception e)
-                {
-                    System.out.println("Something went wrong");
-                }
-            }
-    
-        }
-        else
+                    //this is what the thread does
+        this.clientOutput.println("What is your name?");
+        String name = clientInput.nextLine();
+        CORE.broadcastMessage(name + " has joined!");
+
+        String message;
+        while(true)
         {
-            while(true)
+            message = clientInput.nextLine();
+            if(message.equals("/quit"))
             {
-                try{
-                    wait(5000);
-                }
-                catch (Exception e)
-                {
-                    System.out.println("Something went wrong");
-                }
-                String message = clientInput.nextLine();
-
+                CORE.removePrintStream(this.clientOutput.hashCode());
+                this.clientOutput.println("closing everything down");
+                this.theClientSocket.close();
+                this.clientInput.close();
+                this.clientOutput.close();
             }
-    
+            CORE.broadcastMessage(message);
         }
-
-        //System.out.println("read: " + message);
+        }
+        catch(Exception e)
+        {
+            System.out.println("There was an error:\n" + e.getMessage());
+        }
 
     }
 }

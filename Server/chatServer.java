@@ -1,25 +1,24 @@
-import java.io.*;
+
+import java.io.PrintStream;
 import java.net.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 public class chatServer
 {
     public static void main(String[] args) throws Exception
     {
-        // only to create the Server once 
         ServerSocket s = new ServerSocket(2222);
-        int count = 0;
-    
+        ArrayList<ChatWorkerThread> theThreads = new ArrayList<ChatWorkerThread>();
         while(true)
         {
-            System.out.println("Listening for Connection...");
-            Socket client = s.accept(); //blocks until connection
-            System.out.println("Connection made");
-    
-           // ChatWorkerThread t = ChatWorkerThread.getInstance(client);
-        // as soon as we start the thread, the server can start listening for another connection 
-        } 
-
-    } 
+            System.out.println("Listenning for Connection...");
+            Socket client = s.accept(); //blocks
+            ChatWorkerThread t = new ChatWorkerThread(client);
+            theThreads.add(t);
+            t.start();
+        }
+        
+    }
 }
 

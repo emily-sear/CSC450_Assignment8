@@ -1,31 +1,60 @@
-import java.io.*;
-import java.net.*;
+import java.io.PrintStream;
+import java.net.Socket;
 import java.util.Scanner;
-
 
 public class Client 
 {
     public static void main(String[] args) throws Exception
     {
-        Socket client = new Socket("localhost", 2222); // blocks until connection 
+        Socket s = new Socket("localhost", 2222); 
+        Scanner clientInput = new Scanner(s.getInputStream());
+        
+        String question = clientInput.nextLine();
+        System.out.println(question);
+        Scanner localInput = new Scanner(System.in);
+        PrintStream clientOutput = new PrintStream(s.getOutputStream());
 
-        Scanner input = new Scanner(client.getInputStream());
-        Scanner userInput = new Scanner(System.in);
-        PrintStream output = new PrintStream(client.getOutputStream());
-        ChatManager manager = ChatManager.ChatManager();
+        
+        Thread lt = new Thread()
+        { // Closure... locally overriding a class 
+            public void run()
+            {
+                try
+                {
+                    String line;
+                    while(true)
+                    {
+                        line = clientInput.nextLine();
+                        if(line.equals("closing everything down"))
+                        {
+                            s.close();
+                            clientInput.close();
+                            clientOutput.close();
+                            System.out.println("Bye!");
+                        }
+                        System.out.println(line);
+                    }
+                }
+                
+                catch(Exception e)
+                {
+                    System.err.println("There was an error:\n" + e.getMessage());
+                }
+            }
+        };
+
+        lt.start();
+        String message;
         while(true)
         {
-            for(int i = 0; i < manager.theMessages.size(); i++)
+            message = localInput.nextLine();
+            clientOutput.println(message);
+            if(message.equals("/quit"))
             {
-                System.out.println(manager.theMessages.get(i));
+                break;
             }
-            String name = userInput.nextLine();
-            output.println(name);
-            manager.theMessages.add(name);
-    
 
-    
-        }
+        } 
 
     }
 }
